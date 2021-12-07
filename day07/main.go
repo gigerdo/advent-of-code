@@ -24,7 +24,7 @@ func part1(crabs []int) {
 	for pos := 0; pos < 1000; pos++ {
 		distance := 0
 		for _, crab := range crabs {
-			distance += pos - crab
+			distance += abs(pos - crab)
 		}
 
 		if distance < minDistance {
@@ -43,7 +43,7 @@ func part2(crabs []int) {
 	for pos := 0; pos < 1000; pos++ {
 		totalCost := 0
 		for _, crab := range crabs {
-			distance := pos - crab
+			distance := abs(pos - crab)
 			totalCost += (distance*distance + distance) / 2
 		}
 
@@ -87,4 +87,12 @@ func readInput(path string) []int {
 func atoi(in string) int {
 	r, _ := strconv.Atoi(in)
 	return r
+}
+
+func abs(i int) int {
+	if i > 0 {
+		return i
+	} else {
+		return -i
+	}
 }
