@@ -19,33 +19,56 @@ func playPart2(player1Pos int, player1Score int, player2Pos int, player2Score in
 		return 0, 1
 	}
 
-	var rolledNumbers = make(map[int]int)
+	var result, hasResult = cache[cachekey{player1Pos, player1Score, player2Pos, player2Score, player1sTurn}]
+
+	if hasResult {
+		return result.player1Wins, result.player2Wins
+	}
+
+	var rolledNumbers []int
 	for i := 1; i <= 3; i++ {
 		for j := 1; j <= 3; j++ {
 			for k := 1; k <= 3; k++ {
 				var total = i + j + k
-				rolledNumbers[total] += 1
+				rolledNumbers = append(rolledNumbers, total)
 			}
 		}
 	}
 
 	var player1Wins = 0
 	var player2Wins = 0
-	for k, v := range rolledNumbers {
+	for _, roll := range rolledNumbers {
 		if player1sTurn {
-			var newPos = move(player1Pos, k)
+			var newPos = move(player1Pos, roll)
 			var p1, p2 = playPart2(newPos, player1Score+newPos, player2Pos, player2Score, !player1sTurn)
-			player1Wins += p1 * v
-			player2Wins += p2 * v
+			player1Wins += p1
+			player2Wins += p2
 		} else {
-			var newPos = move(player2Pos, k)
+			var newPos = move(player2Pos, roll)
 			var p1, p2 = playPart2(player1Pos, player1Score, newPos, player2Score+newPos, !player1sTurn)
-			player1Wins += p1 * v
-			player2Wins += p2 * v
+			player1Wins += p1
+			player2Wins += p2
 		}
 	}
 
+	cache[cachekey{player1Pos, player1Score, player2Pos, player2Score, player1sTurn}] = cachevalue{player1Wins, player2Wins}
+
 	return player1Wins, player2Wins
+}
+
+var cache = make(map[cachekey]cachevalue)
+
+type cachekey struct {
+	player1Pos   int
+	player1Score int
+	player2Pos   int
+	player2Score int
+	player1sTurn bool
+}
+
+type cachevalue struct {
+	player1Wins int
+	player2Wins int
 }
 
 func part1() {
@@ -69,7 +92,7 @@ func part1() {
 		}
 	}
 
-	fmt.Println("Part1", min(player1Score, player2Score)*rolls)
+	fmt.Println("Part 1", min(player1Score, player2Score)*rolls)
 }
 
 func rollAndMove(startPos int) int {
