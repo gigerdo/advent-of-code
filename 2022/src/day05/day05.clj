@@ -1,5 +1,7 @@
 ;(def input (slurp "sample.txt"))
 (def input (slurp "input.txt"))
+;(def input (slurp "aoc_2022_day05_large_input.txt"))
+
 
 (def input-parts (clojure.string/split input #"\n\n"))
 
