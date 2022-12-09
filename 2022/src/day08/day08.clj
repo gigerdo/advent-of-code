@@ -78,7 +78,7 @@
 (println "Part 1" count-trees)
 
 ; Start from specific tree, count all visible trees in one dir
-(defn count-visble-trees-in-dir [pos increment-fn tree-line visible]
+(defn count-visible-trees-in-dir [pos increment-fn tree-line visible]
   (let [next-pos (increment-fn pos)
         next-value (get-spot input next-pos)]
     (cond
@@ -89,10 +89,10 @@
 ; Check all dirs for one tree, calculate score
 (defn visible-trees [pos]
   (let [current-height (get-spot input pos)
-        visible-right (count-visble-trees-in-dir pos (fn [p] (update-in p [1] + 1)) current-height 0)
-        visible-left (count-visble-trees-in-dir pos (fn [p] (update-in p [1] - 1)) current-height 0)
-        visible-top (count-visble-trees-in-dir pos (fn [p] (update-in p [0] + 1)) current-height 0)
-        visible-bottom (count-visble-trees-in-dir pos (fn [p] (update-in p [0] - 1)) current-height 0)]
+        visible-right (count-visible-trees-in-dir pos (fn [p] (update-in p [1] + 1)) current-height 0)
+        visible-left (count-visible-trees-in-dir pos (fn [p] (update-in p [1] - 1)) current-height 0)
+        visible-top (count-visible-trees-in-dir pos (fn [p] (update-in p [0] + 1)) current-height 0)
+        visible-bottom (count-visible-trees-in-dir pos (fn [p] (update-in p [0] - 1)) current-height 0)]
     (* visible-right visible-left visible-bottom visible-top)))
 
 ; Check all trees
