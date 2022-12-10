@@ -1,11 +1,11 @@
 ;(def input (slurp "sample.txt"))
 ;(def input (slurp "sample2.txt"))
-(def input (slurp "input.txt"))
+(def input (slurp "aoc_2022_day09_large-1.in"))
 
 (def input
   (->> (clojure.string/split input #"\n")
        (map #(clojure.string/split (clojure.string/trim %) #" "))))
-(println input)
+;(println input)
 
 (defn parse-movement [movement]
   (let [dir (first movement)
@@ -22,7 +22,7 @@
   (let [[dir steps] (parse-movement movement)]
     (reduce (fn [agg next] (conj agg dir)) [] (range steps))))
 (def steps (->> (mapcat expand-input input)))
-(println steps)
+;(println steps)
 
 (defn move-head [head movement]
   [(+ (first head) (first movement)) (+ (second head) (second movement))])
@@ -45,30 +45,30 @@
 (defn move-rope [head tail tail-positions movement]
   (let [new-head (move-head head movement)
         new-tail (move-tail new-head tail)]
-    [new-head new-tail (conj tail-positions new-tail)]))
+    [new-head new-tail (conj! tail-positions (.toString new-tail))]))
 
 ; head, tail, visited-tail-positions
-(def starting-pos [[0 0] [0 0] [[0 0]]])
+(def starting-pos [[0 0] [0 0] (transient (hash-set (.toString [0 0])))])
+
+(println "Result")
 
 ; Apply all steps in order, keeping track of all visited tail positions
 (def result
-  (reduce
-    (fn [agg next]
-      (move-rope
-        (first agg)
-        (second agg)
-        (get-in agg [2])
-        next))
-    starting-pos
-    steps))
+  (time
+    (count
+      (get
+        (reduce
+          (fn [agg next]
+            (move-rope
+              (first agg)
+              (second agg)
+              (get-in agg [2])
+              next))
+          starting-pos
+          steps)
+        2))))
 
-(def unique-positions
-  (->> (get-in result [2])
-       (map (fn [x] (.toString x)))                         ; Map to string to get a unique key for each step
-       (distinct)
-       (count)))
-
-(println "Part 1" unique-positions)
+(println "Part 1" result)
 
 (defn move-knot [agg knot]
   (let [previous-knot (first agg)
@@ -81,7 +81,7 @@
   (let [new-head (move-head head movement)
         new-knots (second (reduce move-knot [new-head []] knots))
         new-tail (last new-knots)]
-    [new-head new-knots (conj tail-positions new-tail)]))
+    [new-head new-knots (conj! tail-positions (.toString new-tail))]))
 
 (defn move-pos [pos d]
   [(- 30 (+ (first pos) d)) (+ (second pos) d)])
@@ -99,26 +99,25 @@
     (doseq [line updated-field-head] (println line))))
 
 ; Apply all steps in order, keeping track of all visited tail positions
-(def starting-pos-long-rope [[0 0] (repeat 9 [0 0]) [[0 0]]])
+(def starting-pos-long-rope [[0 0] (repeat 9 [0 0]) (transient (hash-set (.toString [0 0])))])
 (def result-2
-  (reduce
-    (fn [agg next]
-      ;(visualize agg)
-      (move-long-rope
-        (first agg)
-        (second agg)
-        (get-in agg [2])
-        next))
-    starting-pos-long-rope
-    steps))
+  (time
+    (count
+      (get
+        (reduce
+          (fn [agg next]
+            ;(visualize agg)
+            (move-long-rope
+              (first agg)
+              (second agg)
+              (get-in agg [2])
+              next))
+          starting-pos-long-rope
+          steps)
+        2))))
 ;(visualize result-2)
 ; Visualize tail-path
 ;(visualize [[0 0] (get-in result-2 [2])])
 
-(def unique-positions-2
-  (->> (get-in result-2 [2])
-       (map (fn [x] (.toString x)))                         ; Map to string to get a unique key for each step
-       (distinct)
-       (count)))
 
-(println "Part 2" unique-positions-2)
+(println "Part 2" result-2)
