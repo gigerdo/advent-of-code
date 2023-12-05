@@ -5,31 +5,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Day05 {
 	public static void main(String[] args) throws IOException {
 		var input = Files.readString(Path.of("aoc-2023/src/main/resources/day05/input.txt"));
-		var seedsSplit = input.split("(seeds:|seed-to-soil map:)");
-		var seeds = Arrays.stream(seedsSplit[1].strip().split(" ")).map(Long::valueOf).toList();
-		var split = seedsSplit[2].split("(soil-to-fertilizer map:|fertilizer-to-water map:|water-to-light map:|light-to-temperature map:|temperature-to-humidity map:|humidity-to-location map:)");
+		var seedsSplit = split(input, "(seeds:|seed-to-soil map:)");
+		var seeds = split(seedsSplit.get(1), " ").stream().map(Long::valueOf).toList();
 
-		var maps = Arrays.stream(split)
+		var mapsSplit = split(seedsSplit.get(2), "(soil-to-fertilizer map:|fertilizer-to-water map:|water-to-light map:|light-to-temperature map:|temperature-to-humidity map:|humidity-to-location map:)");
+		var maps = mapsSplit.stream()
 			.map(m -> {
-				return Arrays.stream(m.strip().split("\n"))
+				return split(m, "\n").stream()
 					.map(l -> {
-						String[] values = l.split(" ");
+						var values = split(l, " ").stream().map(Long::valueOf).toList();
 						return new MapEntry(
-							Long.parseLong(values[0]),
-							Long.parseLong(values[1]),
-							Long.parseLong(values[2])
+							values.get(0),
+							values.get(1),
+							values.get(2)
 						);
 					})
 					.toList();
 			})
 			.toList();
 
+		// Part 1
 		var min = Long.MAX_VALUE;
 		for (Long seed : seeds) {
 			var currentMapping = seed;
@@ -53,6 +52,8 @@ public class Day05 {
 		System.out.println("Part 1");
 		System.out.println(min);
 
+
+		// Part 2
 		var minRange = Long.MAX_VALUE;
 		for (int i = 0; i < seeds.size() / 2; i++) {
 			var start = seeds.get(2 * i);
@@ -80,14 +81,8 @@ public class Day05 {
 		System.out.println(minRange);
 	}
 
-	private static Set<Integer> toSet(List<String> split) {
-		return split.stream()
-			.map(Integer::valueOf)
-			.collect(Collectors.toSet());
-	}
-
 	private static List<String> split(String in, String separator) {
-		return Arrays.stream(in.trim().split(separator)).toList();
+		return Arrays.stream(in.strip().split(separator)).toList();
 	}
 
 	record MapEntry(
