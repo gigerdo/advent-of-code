@@ -11,22 +11,18 @@ import java.util.stream.Stream;
 public class Day10 {
 	public static void main(String[] args) throws IOException {
 		var lines = Files.readAllLines(Path.of("aoc-2023/src/main/resources/day10/input.txt"));
-
 		var height = lines.size();
 		var width = lines.get(0).length();
 
-
 		Pos startPos = getStartPos(lines);
-
 		var previousStep = startPos;
 		var nextStep = new Pos(startPos.y - 1, startPos.x, -1, 0);
-		var counter = 1;
 		var path = new ArrayList<Pos>();
 		path.add(previousStep);
 
 		while (!nextStep.equals(startPos)) {
 			path.add(nextStep);
-			System.out.println(previousStep + "(" + at(lines, previousStep) + ") -> " + nextStep + "(" + at(lines, nextStep) + ")");
+//			System.out.println(previousStep + "(" + at(lines, previousStep) + ") -> " + nextStep + "(" + at(lines, nextStep) + ")");
 			var pst = previousStep;
 			var nst = nextStep;
 			var neighbours = findNeighbours(lines, nextStep);
@@ -35,11 +31,10 @@ public class Day10 {
 				.findFirst()
 				.orElseThrow();
 			previousStep = nst;
-			counter += 1;
 		}
 
 		System.out.println("Part 1");
-		System.out.println(counter / 2);
+		System.out.println(path.size() / 2);
 
 		var insideBlocks = new HashSet<Pos>();
 		for (Pos pos : path) {
