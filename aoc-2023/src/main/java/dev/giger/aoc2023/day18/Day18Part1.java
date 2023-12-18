@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
-public class Day18 {
+public class Day18Part1 {
 
 	public static void main(String[] args) throws IOException {
 		var lines = Files.readAllLines(Path.of("aoc-2023/src/main/resources/day18/input.txt"));
