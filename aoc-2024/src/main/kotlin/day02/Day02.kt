@@ -21,18 +21,9 @@ private fun part1(input: List<List<Int>>) {
 
 private fun part2(input: List<List<Int>>) {
     val result = input.count { ints ->
-        if (isSafe(ints)) {
-            true
-        } else {
-            (0..ints.size - 1).map {
-                val copy = ints.toMutableList()
-                copy.removeAt(it)
-                if (isSafe(copy)) {
-                    return@count true
-                }
-            }
-            false
-        }
+        val subLists = (0..ints.size - 1).asSequence()
+            .map { ints.toMutableList().apply { removeAt(it) } }
+        (sequenceOf(ints) + subLists).any { isSafe(it) }
     }
     println("part2 = $result")
 }
@@ -41,8 +32,8 @@ private fun isSafe(ints: List<Int>): Boolean {
     val diffs = ints.zipWithNext()
         .map { pair -> pair.second - pair.first }
         .map { diff -> Pair(diff > 0 && diff <= 3, diff < 0 && diff >= -3) }
-    return diffs.all<Pair<Boolean, Boolean>> { it.first }
-            || diffs.all<Pair<Boolean, Boolean>> { it.second }
+    return diffs.all { it.first }
+            || diffs.all { it.second }
 }
 
 
