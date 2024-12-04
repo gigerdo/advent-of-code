@@ -1,4 +1,4 @@
-package dev.giger.day03
+package day03
 
 import java.io.File
 

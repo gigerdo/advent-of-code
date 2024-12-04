@@ -1,4 +1,4 @@
-package dev.giger.day02
+package day02
 
 import java.io.File
 import kotlin.collections.zipWithNext

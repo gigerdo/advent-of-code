@@ -1,4 +1,4 @@
-package dev.giger.day01
+package day01
 
 import java.io.File
 import kotlin.math.abs
