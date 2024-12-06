@@ -1,6 +1,11 @@
 package day06
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import java.io.File
+import kotlin.time.measureTime
 
 fun main() {
     val input = File("input.txt").readLines().map { it.toList() }
@@ -9,22 +14,28 @@ fun main() {
         .find { (_, row) -> row.contains('^') }!!
         .let { (y, row) -> Point(y, row.indexOf('^')) }
 
-    var (visitedPositions, _) = simulateGuard(start, input, null)
+    val timeTaken = measureTime {
+        var (visitedPositions, _) = simulateGuard(start, input, null)
 
-    val distinctPositions = visitedPositions.map { it.first }.distinct()
-    println("part1 = ${distinctPositions.size}")
+        val distinctPositions = visitedPositions.map { it.first }.distinct()
+        println("part1 = ${distinctPositions.size}")
 
-    var loopedBlocks = mutableSetOf<Point>()
-    for (blockedPosition in distinctPositions) {
-        if (blockedPosition == start) {
-            continue
+        val result = runBlocking(Dispatchers.Default) {
+            distinctPositions
+                .map {
+                    async {
+                        val (_, loop) = simulateGuard(start, input, it)
+                        loop
+                    }
+                }
+                .awaitAll()
+                .filter { it }
+                .count()
         }
-        val (_, loop) = simulateGuard(start, input, blockedPosition)
-        if (loop) {
-            loopedBlocks.add(blockedPosition)
-        }
+        println("part2 = $result")
     }
-    println("part2 = ${loopedBlocks.size}")
+    println(timeTaken)
+
 }
 
 private fun simulateGuard(
@@ -74,10 +85,9 @@ private fun simulateGuard(
         }
 
         if (visitedPositions.contains(Pair(currentPos, currentDir))) {
-            println("Found loop $blockedPosition")
-
             // Debug print map
             if (false) {
+                println("Found loop $blockedPosition")
                 for ((y, row) in input.withIndex()) {
                     for ((x, ch) in row.withIndex()) {
                         val visited = visitedPositions.find { it.first == Point(y, x) }
