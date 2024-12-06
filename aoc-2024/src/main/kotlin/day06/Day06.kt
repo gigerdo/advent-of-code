@@ -42,7 +42,7 @@ private fun simulateGuard(
     start: Point,
     originalInput: List<List<Char>>,
     blockedPosition: Point?
-): Pair<List<Pair<Point, Char>>, Boolean> {
+): Pair<Set<Pair<Point, Char>>, Boolean> {
     var input = originalInput.map { it.toMutableList() }
 
     if (blockedPosition != null) {
@@ -51,7 +51,7 @@ private fun simulateGuard(
 
     var currentPos = start
     var currentDir = '^'
-    var visitedPositions = mutableListOf<Pair<Point, Char>>()
+    var visitedPositions = mutableSetOf<Pair<Point, Char>>()
     outer@ while (true) {
         visitedPositions += Pair(currentPos, currentDir)
 
