@@ -1,7 +1,10 @@
 package day21
 
 import java.io.File
+import kotlin.collections.filter
+import kotlin.collections.map
 import kotlin.math.abs
+import kotlin.to
 
 fun main() {
     val codes = File("input.txt").readLines()
@@ -18,94 +21,99 @@ fun main() {
         '<' to Point(1, 0), 'v' to Point(1, 1), '>' to Point(1, 2),
     )
 
-    var totalComplexity = 0
-    for (code in codes) {
-        var shortestPath = Int.MAX_VALUE
-        var shortestPaths = listOf<List<Char>>()
-        val s0 = shortestPath(keyPad, code.toList())
-        for (s0Path in s0) {
-            val s1 = shortestPath(directionalPad, s0Path)
-            for (s1Path in s1) {
-                val s2 = shortestPath(directionalPad, s1Path)
-                val shortest = s2.minBy { it.size }
-                if (shortestPath > shortest.size) {
-                    shortestPaths = listOf(
-                        shortest,
-                        s1Path,
-                        s0Path,
-                        code.toList()
-                    )
-                    shortestPath = shortest.size
-                }
-            }
-        }
+    val part1 = listOf(keyPad) + List(2) { directionalPad }
+    println("part1 = ${calculateComplexity(codes, part1)}")
 
-        shortestPaths.map { it.joinToString("") }.forEach { println("${it.length}: $it") }
-        val complexity = shortestPath * code.filter { it != 'A' }.toInt()
-        totalComplexity += complexity
-        println("Complexity: $complexity")
-        println()
-    }
-
-    println("part1 = $totalComplexity")
+    val part2 = listOf(keyPad) + List(25) { directionalPad }
+    println("part2 = ${calculateComplexity(codes, part2)}")
 }
 
-fun shortestPath(keypad: Map<Char, Point>, code: List<Char>): List<List<Char>> {
-    var paths = listOf<List<Char>>(listOf())
-    var current = keypad['A']!!
+private fun calculateComplexity(
+    codes: List<String>,
+    pads: List<Map<Char, Point>>
+): Long {
+    val cache = mutableMapOf<Pair<Code, Int>, Long>()
+    var totalComplexity = 0L
+
+    for (string in codes) {
+        val result = calculateShortestSequenceLength(string.toList(), 0, pads, cache)
+        totalComplexity += result * string.filter { it != 'A' }.toInt()
+    }
+
+    return totalComplexity
+}
+
+fun calculateShortestSequenceLength(
+    code: Code,
+    padIdx: Int,
+    pads: List<Map<Char, Point>>,
+    cache: MutableMap<Pair<Code, Int>, Long>
+): Long {
+    var shortestSequenceLength = 0L
+    var lastChar = 'A'
     for (ch in code) {
-        val next = keypad[ch]!!
-        val (yd, xd) = (next.y - current.y to next.x - current.x)
-        val upDown = if (yd < 0) {
-            List(abs(yd)) { '^' }
+        val pad = pads[padIdx]
+        val subCodes = shortestPath(pad, ch, pad[lastChar]!!)
+        if (padIdx == pads.size - 1) {
+            // On the last pad we can just take the length of the shortest path
+            // (we don't care about the actual path taken)
+            shortestSequenceLength += subCodes.minBy { it.size }.size
         } else {
-            List(abs(yd)) { 'v' }
-        }
-        val leftRight = if (xd < 0) {
-            List(abs(xd)) { '<' }
-        } else {
-            List(abs(xd)) { '>' }
-        }
-        val perms = permutations(upDown + leftRight)
-            .filter {
-                var p = current
-                for (c in it) {
-                    p += when (c) {
-                        '^' -> Point(-1, 0)
-                        'v' -> Point(1, 0)
-                        '<' -> Point(0, -1)
-                        '>' -> Point(0, 1)
-                        else -> throw IllegalArgumentException("Invalid direction: $c")
-                    }
-                    if (p !in keypad.values) {
-                        return@filter false
+            shortestSequenceLength += subCodes
+                .map {
+                    cache.getOrPut(Pair(it, padIdx + 1)) {
+                        calculateShortestSequenceLength(it, padIdx + 1, pads, cache)
                     }
                 }
-                true
-            }
-        paths = paths.flatMap { path -> perms.map { path + it + 'A' } }.distinct()
-        current = next
+                .min()
+        }
+        lastChar = ch
     }
-    return paths
+    return shortestSequenceLength
 }
 
-fun <T> permutations(input: List<T>): List<List<T>> {
-    if (input.isEmpty()) return listOf(emptyList())
-
-    val result = mutableListOf<List<T>>()
-
-    for (i in input.indices) {
-        val current = input[i]
-        val remaining = input.toMutableList().apply { removeAt(i) }
-
-        permutations(remaining).forEach { permutation ->
-            result.add(listOf(current) + permutation)
-        }
+fun shortestPath(keypad: Map<Char, Point>, ch: Char, start: Point): List<Code> {
+    val end = keypad[ch]!!
+    val (yd, xd) = (end.y - start.y to end.x - start.x)
+    val upDown = if (yd < 0) {
+        List(abs(yd)) { '^' }
+    } else {
+        List(abs(yd)) { 'v' }
+    }
+    val leftRight = if (xd < 0) {
+        List(abs(xd)) { '<' }
+    } else {
+        List(abs(xd)) { '>' }
     }
 
-    return result
+    return listOf(
+        // We don't need all permutations here:
+        // Tt is always optimal to keep moving in the same direction as long as possible.
+        // So either move up/down first or left/right first.
+        upDown + leftRight + 'A',
+        leftRight + upDown + 'A'
+    )
+        .filter<List<Char>> {
+            // Reject paths that go out of bounds
+            var p = start
+            for (c in it) {
+                p += when (c) {
+                    '^' -> Point(-1, 0)
+                    'v' -> Point(1, 0)
+                    '<' -> Point(0, -1)
+                    '>' -> Point(0, 1)
+                    else -> Point(0, 0)
+                }
+                if (p !in keypad.values) {
+                    return@filter false
+                }
+            }
+            true
+        }
 }
 
 data class Point(val y: Int, val x: Int) {
     operator fun plus(other: Point) = Point(y + other.y, x + other.x)
 }
+
+typealias Code = List<Char>
