@@ -49,3 +49,12 @@ executable day02
                       text
     hs-source-dirs:   day02
     default-language: Haskell2010
+
+executable day03
+    import:           warnings
+    main-is:          Main.hs
+    build-depends:    base ^>=4.21.0.0,
+                      split,
+                      text
+    hs-source-dirs:   day03
+    default-language: Haskell2010
