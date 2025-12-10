@@ -124,3 +124,17 @@ executable day09
                       mtl
     hs-source-dirs:   day09
     default-language: Haskell2010
+
+executable day10
+    import:           warnings
+    main-is:          Main.hs
+    build-depends:    base ^>=4.21.0.0,
+                      split,
+                      text,
+                      lens,
+                      containers,
+                      mtl,
+                      attoparsec,
+                      sbv
+    hs-source-dirs:   day10
+    default-language: Haskell2010
