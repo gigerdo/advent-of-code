@@ -138,3 +138,16 @@ executable day10
                       sbv
     hs-source-dirs:   day10
     default-language: Haskell2010
+
+executable day11
+    import:           warnings
+    main-is:          Main.hs
+    build-depends:    base ^>=4.21.0.0,
+                      split,
+                      text,
+                      lens,
+                      containers,
+                      mtl,
+                      attoparsec
+    hs-source-dirs:   day11
+    default-language: Haskell2010
